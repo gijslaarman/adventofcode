@@ -33,7 +33,8 @@ testWrapper("Day 06", () => {
     expect(result).toEqual(6);
   });
 
-  Deno.test("Part 2 - File input", () => {
-    expect(solvePart2(fileInput)).toEqual(1909);
+  Deno.test("Part 2 - File input", async () => {
+    const result = await solvePart2(fileInput);
+    expect(result).toEqual(1909);
   });
 });
