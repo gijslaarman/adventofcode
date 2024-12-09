@@ -15,3 +15,12 @@ export const reverseString = (str: string) => str.split("").reverse().join("");
 export const createGrid = (input: string) => {
   return input.split("\n").map((row) => row.split(""));
 };
+
+export const createMapCopy = (grid: string[][]) => {
+  return grid.map((innerArray) => [...innerArray]);
+};
+
+// Transform the grid into a string
+export const stringifyMap = (grid: string[][]) => {
+  return grid.map((xAxis) => xAxis.join("")).join("\n");
+};

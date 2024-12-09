@@ -1,9 +1,5 @@
-import { createGrid } from "../utils/converters.ts";
-import {
-  createMapCopy,
-  getStartingPosition,
-  stringifyMap,
-} from "./map.utils.ts";
+import { createGrid, createMapCopy } from "../utils/converters.ts";
+import { getStartingPosition } from "./map.utils.ts";
 import { walkThroughGrid } from "./walk-grid.ts";
 
 export const solvePart1 = (input: string) => {

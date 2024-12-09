@@ -1,8 +1,8 @@
-import { COMPASS_DIRECTIONS } from "./map.utils.ts";
-import { CompassDirection } from "./map.utils.ts";
-import { createMapCopy } from "./map.utils.ts";
+import { createMapCopy } from "../utils/converters.ts";
 import {
   AllGridPositions,
+  COMPASS_DIRECTIONS,
+  CompassDirection,
   type Coordinate,
   getnextStepPosition,
   guardHitAnObstacle,

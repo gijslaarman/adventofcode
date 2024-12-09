@@ -108,15 +108,6 @@ export const getnextStepPosition = (
   }
 };
 
-export const createMapCopy = (grid: string[][]) => {
-  return grid.map((innerArray) => [...innerArray]);
-};
-
-// Transform the grid into a string
-export const stringifyMap = (grid: string[][]) => {
-  return grid.map((xAxis) => xAxis.join("")).join("\n");
-};
-
 export const guardHitAnObstacle = (nextStepPosition: AllGridPositions) => {
   return IMPASSIBLE_POSITIONS.includes(
     nextStepPosition as ImpassibleGridPosition,
