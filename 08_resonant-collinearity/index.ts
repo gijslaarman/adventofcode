@@ -19,87 +19,177 @@ const extractAntennas = (grid: Grid): AntennaCollection => {
   return antennaCollection;
 };
 
+const getAntiNodes = (
+  grid: Grid,
+  [antenna, antennaToCompare]: Coordinate[],
+) => {
+  const { x: xDiff, y: yDiff } = grid.getDifferenceBetweenCoordinates(
+    antenna,
+    antennaToCompare,
+  );
+
+  const antiNodeOne = grid.moveCoordinate(antenna, {
+    x: xDiff,
+    y: yDiff,
+  });
+  // Do the reverse steps for the compared antenna
+  const antiNodeTwo = grid.moveCoordinate(antennaToCompare, {
+    x: -xDiff,
+    y: -yDiff,
+  });
+
+  return [antiNodeOne, antiNodeTwo];
+};
+
+const getAntiNodesLine = (
+  grid: Grid,
+  [antenna, antennaToCompare]: Coordinate[],
+) => {
+  const { x: xDiff, y: yDiff } = grid.getDifferenceBetweenCoordinates(
+    antenna,
+    antennaToCompare,
+  );
+  let positiveRow = true;
+  let negativeRow = true;
+
+  let current = { x: antenna.x, y: antenna.y };
+  const antiNodes = [current];
+
+  while (positiveRow) {
+    current = grid.moveCoordinate(current, { x: xDiff, y: yDiff });
+
+    if (grid.isOutOfBounds(current)) {
+      positiveRow = false;
+      break;
+    }
+
+    antiNodes.push(current);
+  }
+
+  while (negativeRow) {
+    current = grid.moveCoordinate(current, { x: -xDiff, y: -yDiff });
+
+    if (grid.isOutOfBounds(current)) {
+      negativeRow = false;
+      break;
+    }
+
+    antiNodes.push(current);
+  }
+
+  return antiNodes;
+};
+
+const findAllNodesFromAntennaCollection = (
+  grid: Grid,
+  antennas: Coordinate[],
+  createLines = false,
+) => {
+  const antiNodes = new Set<string>();
+
+  /**
+   * @returns Boolean - is node added boolean
+   */
+  const addNode = (node: Coordinate): boolean => {
+    if (grid.isOutOfBounds(node)) return false;
+    antiNodes.add(`${node.x},${node.y}`);
+    return true;
+  };
+
+  antennas.forEach((antenna, index) => {
+    const remainingAntennas = antennas.slice(index + 1);
+
+    remainingAntennas.forEach((antennaToCompare) => {
+      if (createLines) {
+        const foundNodes = getAntiNodesLine(grid, [antenna, antennaToCompare]);
+
+        foundNodes.forEach(addNode);
+      } else {
+        const foundNodes = getAntiNodes(grid, [antenna, antennaToCompare]);
+
+        foundNodes.forEach(addNode);
+      }
+    });
+  });
+
+  return antiNodes;
+};
+
 export const solvePart1 = (input: string) => {
   const grid = new Grid(input);
   const antennaCollection = extractAntennas(grid);
-  const antiNodesSet = new Set<string>();
+  let antiNodesSet = new Set<string>();
 
+  // Check per letter on the grid where the anti-nodes are placed.
   for (const antennaName in antennaCollection) {
-    const antennas = antennaCollection[antennaName];
+    const antiNodes = findAllNodesFromAntennaCollection(
+      grid,
+      antennaCollection[antennaName],
+    );
 
-    antennas.forEach((antenna, index) => {
-      const remainingAntennas = antennas.slice(index + 1);
-
-      remainingAntennas.forEach((antennaToCompare) => {
-        const { x: xDiff, y: yDiff } = grid.getDifferenceBetweenCoordinates(
-          antenna,
-          antennaToCompare,
-        );
-
-        const antiNodeOne = grid.moveCoordinate(antenna, {
-          x: xDiff,
-          y: yDiff,
-        });
-        // Do the reverse steps for the compared antenna
-        const antiNodeTwo = grid.moveCoordinate(antennaToCompare, {
-          x: -xDiff,
-          y: -yDiff,
-        });
-
-        [antiNodeOne, antiNodeTwo].forEach((node) => {
-          if (!grid.isOutOfBounds(node)) {
-            antiNodesSet.add(`${node.x},${node.y}`);
-          }
-        });
-      });
-    });
+    antiNodesSet = antiNodesSet.union(antiNodes);
   }
 
   return Array.from(antiNodesSet).length;
 };
 
+// This is not needed, It only needs to create lines, not spawn new nodes from the anti-nodes.
+// const findRecursiveAntiNodes = (grid: Grid, antennas: Coordinate[]) => {
+//   const antiNodes = new Set<string>();
+
+//   const recursiveHelper = (currentAntennas: Coordinate[]) => {
+//     if (currentAntennas.length < 2) return;
+
+//     currentAntennas.forEach((antenna, index) => {
+//       const remainingAntennas = currentAntennas.slice(index + 1);
+//       console.log({ antenna, remainingAntennas });
+
+//       remainingAntennas.forEach((antennaToCompare) => {
+//         const foundNodes = getAntiNodes(grid, [antenna, antennaToCompare]);
+
+//         foundNodes.forEach((node) => {
+//           if (grid.isOutOfBounds(node)) return;
+
+//           const nodeKey = `${node.x},${node.y}`;
+//           if (!antiNodes.has(nodeKey)) {
+//             antiNodes.add(nodeKey);
+//             recursiveHelper([...currentAntennas, node]);
+//           }
+//         });
+//       });
+//     });
+//   };
+
+//   recursiveHelper(antennas);
+
+//   return antiNodes;
+// };
+
 export const solvePart2 = (input: string) => {
-  return 0;
-  // const [antennaCollection] = extractAntennas(input.trim());
-  // const antiNodesSet = new Set<string>();
-  // const grid = new Grid(input);
+  const grid = new Grid(input);
+  const antennaCollection = extractAntennas(grid);
+  let antiNodesSet = new Set<string>();
 
-  // // Check per letter on the grid where the anti-nodes are placed.
-  // for (const antennaGroup in antennaCollection) {
-  //   const antennas = antennaCollection[antennaGroup];
+  // Check per letter on the grid where the anti-nodes are placed.
+  for (const antennaName in antennaCollection) {
+    const antiNodes = findAllNodesFromAntennaCollection(
+      grid,
+      antennaCollection[antennaName],
+      true,
+    );
 
-  //   // Check for each antenna in the group where to place the anti-nodes.
+    antiNodesSet = antiNodesSet.union(antiNodes);
+  }
 
-  //   const antennaGroupAntiNodes = new Set(antennas);
-  //   let allowLoop = true;
+  const array = Array.from(antiNodesSet);
 
-  //   // Since we are adding anti-nodes to the set, we need to check if the new anti-nodes spawn more anti-nodes.
-  //   while (allowLoop) {
-  //     antennas.forEach((antenna, _, array) => {
-  //       const remainingAntennas = array.filter((t) => t !== antenna);
+  grid.loopThroughGrid((cell, x, y) => {
+    if (array.includes(`${x},${y}`) && cell === ".") {
+      grid.grid[y][x] = "#";
+    }
+  });
 
-  //       remainingAntennas.forEach((antennaToCompare) => {
-  //         const [antiNodeOne, antiNodeTwo] = getAntiNodesCoordinates(
-  //           antenna,
-  //           antennaToCompare,
-  //         );
+  console.log(grid.stringify());
 
-  //         console.log(antenna, antiNodeOne, antiNodeTwo);
-
-  //         if (
-  //           grid.isOutOfBounds(antiNodeOne) && grid.isOutOfBounds(antiNodeTwo)
-  //         ) {
-  //           allowLoop = false;
-  //         }
-
-  //         antennaGroupAntiNodes.add(antiNodeOne);
-  //         antennaGroupAntiNodes.add(antiNodeTwo);
-  //       });
-  //     });
-  //   }
-
-  //   antiNodesSet.union(antennaGroupAntiNodes);
-  // }
-
-  // return Array.from(antiNodesSet).length;
+  return Array.from(antiNodesSet).length;
 };
