@@ -40,6 +40,7 @@ export const solvePart1 = (input: string) => {
           x: xDiff,
           y: yDiff,
         });
+        // Do the reverse steps for the compared antenna
         const antiNodeTwo = grid.moveCoordinate(antennaToCompare, {
           x: -xDiff,
           y: -yDiff,
@@ -47,11 +48,7 @@ export const solvePart1 = (input: string) => {
 
         [antiNodeOne, antiNodeTwo].forEach((node) => {
           if (!grid.isOutOfBounds(node)) {
-            const isNodeAlreadySet = antiNodesSet.has(`${node.x},${node.y}`);
-
-            if (!isNodeAlreadySet) {
-              antiNodesSet.add(`${node.x},${node.y}`);
-            }
+            antiNodesSet.add(`${node.x},${node.y}`);
           }
         });
       });
